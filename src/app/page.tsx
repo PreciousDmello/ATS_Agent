@@ -49,7 +49,7 @@ export default function HomePage() {
                 <div className="navbar-inner">
                     <Link href="/" className="logo">
                         <div className="logo-icon">
-                            <Sparkles size={18} />
+                            <FileText size={18} />
                         </div>
                         WhizResume
                     </Link>
@@ -115,8 +115,8 @@ export default function HomePage() {
                         </div>
 
                         <div className="card feature-card">
-                            <div className="feature-icon-wrapper">
-                                <Sparkles size={24} />
+                            <div className="feature-icon-wrapper" style={{ color: 'var(--primary-600)' }}>
+                                <FileText size={24} />
                             </div>
                             <h3>Smart Enhancement</h3>
                             <p>
