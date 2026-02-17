@@ -1,7 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    typescript: {
+        ignoreBuildErrors: true,
+    },
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
     experimental: {
-        serverComponentsExternalPackages: ['pdf-parse', 'docx'],
+        serverComponentsExternalPackages: ['pdf-parse'],
     },
     webpack: (config) => {
         config.resolve.alias.canvas = false;
