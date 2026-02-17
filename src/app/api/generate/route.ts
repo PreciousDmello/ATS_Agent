@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
             // Generate DOCX using the docx library
             const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = await import('docx');
 
-            const sections: Paragraph[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const sections: any[] = [];
 
             // Header - Name
             sections.push(
@@ -212,8 +213,9 @@ export async function POST(request: NextRequest) {
             });
 
             const docBuffer = await Packer.toBuffer(doc);
+            const uint8 = new Uint8Array(docBuffer);
 
-            return new NextResponse(docBuffer, {
+            return new NextResponse(uint8, {
                 headers: {
                     'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                     'Content-Disposition': `attachment; filename="resume_${resumeData.personalInfo.fullName?.replace(/\s+/g, '_') || 'optimized'}.docx"`,
