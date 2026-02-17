@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
 
         if (format === 'docx') {
             // Generate DOCX using the docx library
-            const sections: Paragraph[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const sections: any[] = [];
 
             // Header - Name
             sections.push(
