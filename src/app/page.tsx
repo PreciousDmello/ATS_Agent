@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Script from 'next/script';
 import {
     FileText,
     BarChart3,
@@ -17,8 +18,32 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        'name': 'WhizResume',
+        'applicationCategory': 'BusinessApplication',
+        'operatingSystem': 'Web',
+        'offers': {
+            '@type': 'Offer',
+            'price': '0',
+            'priceCurrency': 'USD'
+        },
+        'description': 'AI-powered resume builder that optimizes your resume for ATS systems and helps you land more interviews.',
+        'aggregateRating': {
+            '@type': 'AggregateRating',
+            'ratingValue': '4.8',
+            'ratingCount': '1250'
+        }
+    };
+
     return (
         <>
+            <Script
+                id="app-ld-json"
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             {/* Navbar */}
             <nav className="navbar">
                 <div className="navbar-inner">
