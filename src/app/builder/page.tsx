@@ -9,13 +9,34 @@ import {
     WizardStep,
     EnhancementChange,
     ChatMessage,
-    Education,
-    Experience,
-    Skill,
-    Project,
 } from '@/lib/types';
 import { TEMPLATES } from '@/lib/templates';
 import { createEmptyResume } from '@/lib/parser';
+import {
+    Upload,
+    FileText,
+    BarChart3,
+    Sparkles,
+    Layout,
+    Download,
+    ArrowRight,
+    ArrowLeft,
+    Check,
+    X,
+    MessageSquare,
+    Plus,
+    Trash2,
+    ChevronDown,
+    ChevronUp,
+    AlertCircle,
+    Briefcase,
+    GraduationCap,
+    Code,
+    FolderKanban,
+    User,
+    Loader2,
+    FileType
+} from 'lucide-react';
 
 /* ========================================
    Builder Page — Main Component
@@ -41,7 +62,7 @@ export default function BuilderPage() {
     // Chat state
     const [chatOpen, setChatOpen] = useState(false);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-        { id: '1', role: 'assistant', content: 'Hi! I\'m your AI resume coach. Ask me anything about improving your resume!', timestamp: new Date() },
+        { id: '1', role: 'assistant', content: 'Hi! I\'m your resume coach. Ask me anything about improving your resume!', timestamp: new Date() },
     ]);
     const [chatInput, setChatInput] = useState('');
     const [chatLoading, setChatLoading] = useState(false);
@@ -56,7 +77,7 @@ export default function BuilderPage() {
     // Steps config
     const steps: { id: WizardStep; label: string; number: number }[] = [
         { id: 'input', label: 'Input', number: 1 },
-        { id: 'score', label: 'ATS Score', number: 2 },
+        { id: 'score', label: 'Score', number: 2 },
         { id: 'enhance', label: 'Enhance', number: 3 },
         { id: 'template', label: 'Template', number: 4 },
         { id: 'download', label: 'Download', number: 5 },
@@ -68,7 +89,7 @@ export default function BuilderPage() {
     // ======== File Upload ========
     const handleFileUpload = async (file: File) => {
         setIsProcessing(true);
-        setProcessingMessage('Parsing your resume...');
+        setProcessingMessage('Parsing document...');
 
         try {
             const formData = new FormData();
@@ -100,7 +121,7 @@ export default function BuilderPage() {
     // ======== ATS Score ========
     const calculateScore = async (data: ResumeData) => {
         setIsProcessing(true);
-        setProcessingMessage('Calculating ATS Score...');
+        setProcessingMessage('Calculating Score...');
 
         try {
             const res = await fetch('/api/ats-score', {
@@ -122,7 +143,7 @@ export default function BuilderPage() {
     // ======== AI Enhancement ========
     const handleEnhance = async () => {
         setIsProcessing(true);
-        setProcessingMessage('AI is enhancing your resume... This may take a moment.');
+        setProcessingMessage('Enhancing content...');
 
         try {
             const res = await fetch('/api/enhance', {
@@ -184,11 +205,10 @@ export default function BuilderPage() {
     const handleDownload = async (format: 'html' | 'docx') => {
         const data = enhancedData || resumeData;
         setIsProcessing(true);
-        setProcessingMessage(`Generating ${format.toUpperCase()} file...`);
+        setProcessingMessage(`Generating ${format.toUpperCase()}...`);
 
         try {
             if (format === 'html') {
-                // Download HTML as PDF (print-friendly)
                 const res = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -196,7 +216,6 @@ export default function BuilderPage() {
                 });
                 const html = await res.text();
 
-                // Open in new window for printing as PDF
                 const printWindow = window.open('', '_blank');
                 if (printWindow) {
                     printWindow.document.write(html);
@@ -301,7 +320,7 @@ export default function BuilderPage() {
     const addExperience = () => {
         setResumeData(prev => ({
             ...prev,
-            experience: [...prev.experience, { id: Date.now().toString(), company: '', position: '', startDate: '', endDate: '', current: false, description: [''] }],
+            experience: [...prev.experience, { id: Date.now().toString(), company: '', position: '', startDate: '', endDate: '', gpa: '', highlights: [] }],
         }));
     };
 
@@ -424,6 +443,18 @@ export default function BuilderPage() {
         return '#ef4444';
     };
 
+    // ======== Icons Helper ========
+    const getTabIcon = (tab: string) => {
+        switch (tab) {
+            case 'personal': return <User size={16} />;
+            case 'education': return <GraduationCap size={16} />;
+            case 'experience': return <Briefcase size={16} />;
+            case 'skills': return <Code size={16} />;
+            case 'projects': return <FolderKanban size={16} />;
+            default: return <FileText size={16} />;
+        }
+    }
+
     // ======== RENDER ========
     return (
         <>
@@ -431,11 +462,15 @@ export default function BuilderPage() {
             <nav className="navbar">
                 <div className="navbar-inner">
                     <Link href="/" className="logo">
-                        <div className="logo-icon">✦</div>
+                        <div className="logo-icon">
+                            <Sparkles size={18} />
+                        </div>
                         WhizResume
                     </Link>
                     <div className="nav-links">
-                        <Link href="/" className="nav-link">← Home</Link>
+                        <Link href="/" className="nav-link flex items-center gap-1">
+                            <ArrowLeft size={16} /> Home
+                        </Link>
                     </div>
                 </div>
             </nav>
@@ -451,7 +486,7 @@ export default function BuilderPage() {
                                 style={{ cursor: currentIndex >= i ? 'pointer' : 'default' }}
                             >
                                 <span className="wizard-step-number">
-                                    {currentIndex > i ? '✓' : s.number}
+                                    {currentIndex > i ? <Check size={14} /> : s.number}
                                 </span>
                                 {s.label}
                             </div>
@@ -464,10 +499,10 @@ export default function BuilderPage() {
 
                 {/* Processing Overlay */}
                 {isProcessing && (
-                    <div className="card" style={{ maxWidth: '500px', margin: '0 auto' }}>
-                        <div className="loading-overlay">
-                            <div className="spinner"></div>
-                            <p>{processingMessage}<span className="loading-dots"></span></p>
+                    <div className="card" style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center', padding: '40px' }}>
+                        <div className="loading-overlay" style={{ flexDirection: 'column', gap: '16px' }}>
+                            <Loader2 className="animate-spin" size={48} color="var(--primary-500)" />
+                            <p style={{ fontSize: '1.1rem', fontWeight: 500 }}>{processingMessage}</p>
                         </div>
                     </div>
                 )}
@@ -479,23 +514,23 @@ export default function BuilderPage() {
                             <>
                                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                                     <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', marginBottom: '8px' }}>
-                                        How would you like to start?
+                                        Select Input Method
                                     </h2>
                                     <p style={{ color: 'var(--text-secondary)' }}>
-                                        Upload an existing resume or build one from scratch
+                                        Choose how you want to provide your resume details
                                     </p>
                                 </div>
 
                                 <div className="input-method-grid">
                                     <div className="card input-method-card" onClick={() => setInputMethod('upload')}>
-                                        <div className="method-icon">📄</div>
+                                        <div className="method-icon"><Upload size={32} /></div>
                                         <h3>Upload Resume</h3>
-                                        <p>Upload your existing PDF or Word resume for AI analysis and optimization</p>
+                                        <p>Parse existing PDF or Word resume</p>
                                     </div>
                                     <div className="card input-method-card" onClick={() => setInputMethod('manual')}>
-                                        <div className="method-icon">✏️</div>
+                                        <div className="method-icon"><FileText size={32} /></div>
                                         <h3>Build From Scratch</h3>
-                                        <p>Enter your details manually with our guided form and AI assistance</p>
+                                        <p>Use guided forms to enter details</p>
                                     </div>
                                 </div>
                             </>
@@ -505,8 +540,8 @@ export default function BuilderPage() {
                         {inputMethod === 'upload' && (
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}>Upload Your Resume</h2>
-                                    <button className="btn btn-ghost" onClick={() => setInputMethod(null)}>← Back</button>
+                                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}>Upload Document</h2>
+                                    <button className="btn btn-ghost" onClick={() => setInputMethod(null)}><ArrowLeft size={16} /> Back</button>
                                 </div>
 
                                 <div
@@ -515,9 +550,9 @@ export default function BuilderPage() {
                                     onDragOver={(e) => e.preventDefault()}
                                     onClick={() => fileInputRef.current?.click()}
                                 >
-                                    <div className="upload-icon">📁</div>
-                                    <h3>Drag & Drop your resume here</h3>
-                                    <p>or click to browse — Supports PDF and DOCX</p>
+                                    <div className="upload-icon"><Upload size={40} /></div>
+                                    <h3>Drag & Drop Document</h3>
+                                    <p>Supports PDF and DOCX</p>
                                     <input
                                         ref={fileInputRef}
                                         type="file"
@@ -528,11 +563,10 @@ export default function BuilderPage() {
                                 </div>
 
                                 <div className="jd-section">
-                                    <h3>🎯 Target Job Description <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>(Optional)</span></h3>
-                                    <p>Paste the job description to get keyword-matched optimization</p>
+                                    <h3><Briefcase size={16} style={{ display: 'inline', marginRight: '8px' }} /> Target Job Description <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>(Optional)</span></h3>
                                     <textarea
                                         className="form-textarea"
-                                        placeholder="Paste the job description here for better keyword optimization..."
+                                        placeholder="Paste job description for keyword scoring..."
                                         value={jobDescription}
                                         onChange={(e) => setJobDescription(e.target.value)}
                                         rows={4}
@@ -545,8 +579,8 @@ export default function BuilderPage() {
                         {inputMethod === 'manual' && (
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}>Build Your Resume</h2>
-                                    <button className="btn btn-ghost" onClick={() => setInputMethod(null)}>← Back</button>
+                                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}>Resume Details</h2>
+                                    <button className="btn btn-ghost" onClick={() => setInputMethod(null)}><ArrowLeft size={16} /> Back</button>
                                 </div>
 
                                 <div className="form-tabs">
@@ -555,7 +589,9 @@ export default function BuilderPage() {
                                             key={tab}
                                             className={`form-tab ${activeFormTab === tab ? 'active' : ''}`}
                                             onClick={() => setActiveFormTab(tab)}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                                         >
+                                            {getTabIcon(tab)}
                                             {tab.charAt(0).toUpperCase() + tab.slice(1)}
                                         </button>
                                     ))}
@@ -597,7 +633,7 @@ export default function BuilderPage() {
                                             </div>
                                             <div className="form-group">
                                                 <label className="form-label">Professional Summary</label>
-                                                <textarea className="form-textarea" placeholder="A brief 2-3 sentence summary of your professional background and key achievements..." value={resumeData.personalInfo.summary || ''} onChange={(e) => updatePersonalInfo('summary', e.target.value)} rows={3} />
+                                                <textarea className="form-textarea" placeholder="Brief summary of your professional background..." value={resumeData.personalInfo.summary || ''} onChange={(e) => updatePersonalInfo('summary', e.target.value)} rows={3} />
                                             </div>
                                         </div>
                                     )}
@@ -607,12 +643,12 @@ export default function BuilderPage() {
                                         <div>
                                             <div className="entries-header">
                                                 <h3>Education</h3>
-                                                <button className="add-btn" onClick={addEducation}>+ Add Education</button>
+                                                <button className="add-btn" onClick={addEducation}><Plus size={14} /> Add</button>
                                             </div>
                                             {resumeData.education.map((edu, i) => (
                                                 <div key={edu.id} className="entry-card">
                                                     {resumeData.education.length > 1 && (
-                                                        <button className="remove-entry-btn" onClick={() => removeEducation(i)}>×</button>
+                                                        <button className="remove-entry-btn" onClick={() => removeEducation(i)}><Trash2 size={14} /></button>
                                                     )}
                                                     <div className="form-row">
                                                         <div className="form-group">
@@ -654,12 +690,12 @@ export default function BuilderPage() {
                                         <div>
                                             <div className="entries-header">
                                                 <h3>Work Experience</h3>
-                                                <button className="add-btn" onClick={addExperience}>+ Add Experience</button>
+                                                <button className="add-btn" onClick={addExperience}><Plus size={14} /> Add</button>
                                             </div>
                                             {resumeData.experience.map((exp, i) => (
                                                 <div key={exp.id} className="entry-card">
                                                     {resumeData.experience.length > 1 && (
-                                                        <button className="remove-entry-btn" onClick={() => removeExperience(i)}>×</button>
+                                                        <button className="remove-entry-btn" onClick={() => removeExperience(i)}><Trash2 size={14} /></button>
                                                     )}
                                                     <div className="form-row">
                                                         <div className="form-group">
@@ -687,14 +723,14 @@ export default function BuilderPage() {
                                                             {exp.description.map((bullet, j) => (
                                                                 <div key={j} className="bullet-item">
                                                                     <span className="bullet-marker">•</span>
-                                                                    <input className="form-input" placeholder="Describe your achievement or responsibility..." value={bullet} onChange={(e) => updateExpBullet(i, j, e.target.value)} />
+                                                                    <input className="form-input" placeholder="Describe your achievement..." value={bullet} onChange={(e) => updateExpBullet(i, j, e.target.value)} />
                                                                     {exp.description.length > 1 && (
-                                                                        <button onClick={() => removeExpBullet(i, j)}>×</button>
+                                                                        <button onClick={() => removeExpBullet(i, j)}><X size={14} /></button>
                                                                     )}
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        <button className="add-bullet-btn" onClick={() => addExpBullet(i)}>+ Add Bullet</button>
+                                                        <button className="add-bullet-btn" onClick={() => addExpBullet(i)}><Plus size={12} /> Add Bullet</button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -706,12 +742,12 @@ export default function BuilderPage() {
                                         <div>
                                             <div className="entries-header">
                                                 <h3>Skills</h3>
-                                                <button className="add-btn" onClick={addSkillCategory}>+ Add Category</button>
+                                                <button className="add-btn" onClick={addSkillCategory}><Plus size={14} /> Add</button>
                                             </div>
                                             {resumeData.skills.map((skill, i) => (
                                                 <div key={skill.id} className="entry-card">
                                                     {resumeData.skills.length > 1 && (
-                                                        <button className="remove-entry-btn" onClick={() => removeSkillCategory(i)}>×</button>
+                                                        <button className="remove-entry-btn" onClick={() => removeSkillCategory(i)}><Trash2 size={14} /></button>
                                                     )}
                                                     <div className="form-group">
                                                         <label className="form-label">Category</label>
@@ -723,7 +759,7 @@ export default function BuilderPage() {
                                                             {skill.items.map((item, j) => (
                                                                 <span key={j} className="skill-chip">
                                                                     {item}
-                                                                    <button onClick={() => removeSkillItem(i, j)}>×</button>
+                                                                    <button onClick={() => removeSkillItem(i, j)}><X size={12} /></button>
                                                                 </span>
                                                             ))}
                                                             <input
@@ -748,26 +784,26 @@ export default function BuilderPage() {
                                         <div>
                                             <div className="entries-header">
                                                 <h3>Projects</h3>
-                                                <button className="add-btn" onClick={addProject}>+ Add Project</button>
+                                                <button className="add-btn" onClick={addProject}><Plus size={14} /> Add</button>
                                             </div>
                                             {resumeData.projects.map((proj, i) => (
                                                 <div key={proj.id} className="entry-card">
                                                     {resumeData.projects.length > 1 && (
-                                                        <button className="remove-entry-btn" onClick={() => removeProject(i)}>×</button>
+                                                        <button className="remove-entry-btn" onClick={() => removeProject(i)}><Trash2 size={14} /></button>
                                                     )}
                                                     <div className="form-row">
                                                         <div className="form-group">
                                                             <label className="form-label">Project Name</label>
-                                                            <input className="form-input" placeholder="My Awesome Project" value={proj.name} onChange={(e) => updateProject(i, 'name', e.target.value)} />
+                                                            <input className="form-input" placeholder="Project Name" value={proj.name} onChange={(e) => updateProject(i, 'name', e.target.value)} />
                                                         </div>
                                                         <div className="form-group">
                                                             <label className="form-label">Technologies</label>
-                                                            <input className="form-input" placeholder="React, Node.js, MongoDB (comma-separated)" value={proj.technologies.join(', ')} onChange={(e) => updateProject(i, 'technologies', e.target.value.split(',').map(t => t.trim()))} />
+                                                            <input className="form-input" placeholder="React, Node.js (comma-separated)" value={proj.technologies.join(', ')} onChange={(e) => updateProject(i, 'technologies', e.target.value.split(',').map(t => t.trim()))} />
                                                         </div>
                                                     </div>
                                                     <div className="form-group">
                                                         <label className="form-label">Description</label>
-                                                        <textarea className="form-textarea" placeholder="Brief description of the project..." value={proj.description} onChange={(e) => updateProject(i, 'description', e.target.value)} rows={2} />
+                                                        <textarea className="form-textarea" placeholder="Brief project description..." value={proj.description} onChange={(e) => updateProject(i, 'description', e.target.value)} rows={2} />
                                                     </div>
                                                     <div className="form-group">
                                                         <label className="form-label">Highlights</label>
@@ -775,7 +811,7 @@ export default function BuilderPage() {
                                                             {proj.highlights.map((h, j) => (
                                                                 <div key={j} className="bullet-item">
                                                                     <span className="bullet-marker">•</span>
-                                                                    <input className="form-input" placeholder="Key achievement or feature..." value={h} onChange={(e) => {
+                                                                    <input className="form-input" placeholder="Key achievement..." value={h} onChange={(e) => {
                                                                         const updated = [...proj.highlights];
                                                                         updated[j] = e.target.value;
                                                                         updateProject(i, 'highlights', updated);
@@ -783,7 +819,7 @@ export default function BuilderPage() {
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        <button className="add-bullet-btn" onClick={() => updateProject(i, 'highlights', [...proj.highlights, ''])}>+ Add Highlight</button>
+                                                        <button className="add-bullet-btn" onClick={() => updateProject(i, 'highlights', [...proj.highlights, ''])}><Plus size={12} /> Add Highlight</button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -793,11 +829,10 @@ export default function BuilderPage() {
 
                                 {/* Job Description */}
                                 <div className="jd-section">
-                                    <h3>🎯 Target Job Description <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>(Optional)</span></h3>
-                                    <p>Paste the job description for keyword-matched optimization</p>
+                                    <h3><Briefcase size={16} style={{ display: 'inline', marginRight: '8px' }} /> Target Job Description <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>(Optional)</span></h3>
                                     <textarea
                                         className="form-textarea"
-                                        placeholder="Paste the job description here..."
+                                        placeholder="Paste job description for keyword optimization..."
                                         value={jobDescription}
                                         onChange={(e) => setJobDescription(e.target.value)}
                                         rows={4}
@@ -806,7 +841,7 @@ export default function BuilderPage() {
 
                                 <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
                                     <button className="btn btn-primary btn-lg" onClick={handleManualSubmit}>
-                                        Calculate ATS Score →
+                                        Calculate Score <ArrowRight size={18} style={{ marginLeft: '8px' }} />
                                     </button>
                                 </div>
                             </div>
@@ -819,10 +854,10 @@ export default function BuilderPage() {
                     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', marginBottom: '8px' }}>
-                                Your ATS Score
+                                Analysis Results
                             </h2>
                             <p style={{ color: 'var(--text-secondary)' }}>
-                                Here&apos;s how your resume performs against ATS systems
+                                Overview of your resume's performance
                             </p>
                         </div>
 
@@ -849,9 +884,9 @@ export default function BuilderPage() {
 
                                 <div className="score-breakdown">
                                     {[
-                                        { label: 'Keywords & Action Verbs', value: originalScore.breakdown.keywordScore },
-                                        { label: 'Experience Quality', value: originalScore.breakdown.experienceScore },
-                                        { label: 'Section Completeness', value: originalScore.breakdown.sectionScore },
+                                        { label: 'Keywords', value: originalScore.breakdown.keywordScore },
+                                        { label: 'Experience Impact', value: originalScore.breakdown.experienceScore },
+                                        { label: 'Completeness', value: originalScore.breakdown.sectionScore },
                                         { label: 'Readability', value: originalScore.breakdown.readabilityScore },
                                         { label: 'Formatting', value: originalScore.breakdown.formattingScore },
                                     ].map(item => (
@@ -872,8 +907,8 @@ export default function BuilderPage() {
                         {/* Suggestions */}
                         {originalScore.suggestions.length > 0 && (
                             <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
-                                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', marginBottom: '16px' }}>
-                                    💡 Improvement Suggestions
+                                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <AlertCircle size={20} color="var(--accent-500)" /> Areas for Improvement
                                 </h3>
                                 <ul className="suggestions-list">
                                     {originalScore.suggestions.map((s, i) => (
@@ -888,10 +923,10 @@ export default function BuilderPage() {
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                             <button className="btn btn-secondary" onClick={() => setStep('input')}>
-                                ← Back to Edit
+                                Edit Inputs
                             </button>
                             <button className="btn btn-primary btn-lg" onClick={() => { setStep('enhance'); handleEnhance(); }}>
-                                ✨ Enhance with AI →
+                                <Sparkles size={18} style={{ marginRight: '8px' }} /> Optimize Content
                             </button>
                         </div>
                     </div>
@@ -901,13 +936,18 @@ export default function BuilderPage() {
                 {step === 'enhance' && !isProcessing && enhancedData && (
                     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                            <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'var(--primary-900)', marginBottom: '16px', color: 'var(--primary-400)' }}>
+                                <Sparkles size={48} />
+                            </div>
                             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', marginBottom: '8px' }}>
-                                ✨ Enhancement Complete!
+                                Optimization Complete
                             </h2>
                         </div>
-                        <button className="btn btn-primary btn-lg" onClick={() => setStep('template')}>
-                            Choose Template →
-                        </button>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <button className="btn btn-primary btn-lg" onClick={() => setStep('template')}>
+                                Select Template <ArrowRight size={18} style={{ marginLeft: '8px' }} />
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -916,10 +956,10 @@ export default function BuilderPage() {
                     <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
                         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', marginBottom: '8px' }}>
-                                Choose Your Template
+                                Select Template
                             </h2>
                             <p style={{ color: 'var(--text-secondary)' }}>
-                                Select a professional template for your resume
+                                Choose a professional format for your resume
                             </p>
                         </div>
 
@@ -933,9 +973,9 @@ export default function BuilderPage() {
                                             {originalScore.overallScore}
                                         </div>
                                     </div>
-                                    <div className="arrow">→</div>
+                                    <div className="arrow"><ArrowRight size={24} /></div>
                                     <div style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Enhanced Score</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Optimized Score</div>
                                         <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 800, color: getScoreColor(enhancedScore.overallScore) }}>
                                             {enhancedScore.overallScore}
                                         </div>
@@ -953,12 +993,12 @@ export default function BuilderPage() {
                         {changes.length > 0 && (
                             <div style={{ marginBottom: '24px' }}>
                                 <button className="btn btn-secondary" onClick={() => setShowComparison(!showComparison)}>
-                                    {showComparison ? '🔽 Hide Changes' : '🔄 View Changes Made by AI'}
+                                    {showComparison ? <><ChevronUp size={16} /> Hide Changes</> : <><ChevronDown size={16} /> Review Changes</>}
                                 </button>
 
                                 {showComparison && (
                                     <div className="card" style={{ marginTop: '16px', padding: '20px' }}>
-                                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', marginBottom: '16px' }}>AI Enhancement Changes</h3>
+                                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', marginBottom: '16px' }}>Optimization Details</h3>
                                         {changes.map((change, i) => (
                                             <div key={i} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
                                                 <div style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--text-accent)' }}>
@@ -972,14 +1012,14 @@ export default function BuilderPage() {
                                                         </div>
                                                     </div>
                                                     <div className="comparison-panel">
-                                                        <h3><span className="tag tag-enhanced">Enhanced</span></h3>
+                                                        <h3><span className="tag tag-enhanced">Optimized</span></h3>
                                                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                                                             {change.enhanced}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--accent-500)', marginTop: '8px' }}>
-                                                    💡 {change.reason}
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--accent-500)', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <Sparkles size={12} /> {change.reason}
                                                 </div>
                                             </div>
                                         ))}
@@ -997,7 +1037,7 @@ export default function BuilderPage() {
                                     onClick={() => setSelectedTemplate(tmpl.id)}
                                 >
                                     {selectedTemplate === tmpl.id && (
-                                        <div className="template-selected-badge">✓</div>
+                                        <div className="template-selected-badge"><Check size={14} /></div>
                                     )}
                                     <div className="template-preview" style={{ background: `linear-gradient(135deg, ${tmpl.previewColor}, ${tmpl.previewColor}dd)` }}>
                                         {tmpl.name.charAt(0)}
@@ -1011,8 +1051,8 @@ export default function BuilderPage() {
                         {/* Preview */}
                         {previewHtml && (
                             <div style={{ marginBottom: '32px' }}>
-                                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', marginBottom: '16px' }}>
-                                    📋 Live Preview
+                                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <FileText size={20} /> Preview
                                 </h3>
                                 <div className="preview-frame">
                                     <iframe
@@ -1025,7 +1065,7 @@ export default function BuilderPage() {
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button className="btn btn-primary btn-lg" onClick={() => setStep('download')}>
-                                Download Resume →
+                                Generate Resume <ArrowRight size={18} style={{ marginLeft: '8px' }} />
                             </button>
                         </div>
                     </div>
@@ -1036,17 +1076,17 @@ export default function BuilderPage() {
                     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
                         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', marginBottom: '8px' }}>
-                                🎉 Your Resume is Ready!
+                                Resume Ready
                             </h2>
                             <p style={{ color: 'var(--text-secondary)' }}>
-                                Download your ATS-optimized resume in your preferred format
+                                Download your optimized resume
                             </p>
                         </div>
 
                         {/* Final Score */}
                         {(enhancedScore || originalScore) && (
                             <div className="card" style={{ padding: '24px', marginBottom: '32px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Final ATS Score</div>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Final Score</div>
                                 <div style={{
                                     fontFamily: 'var(--font-display)',
                                     fontSize: '4rem',
@@ -1056,10 +1096,10 @@ export default function BuilderPage() {
                                 }}>
                                     {(enhancedScore || originalScore)!.overallScore}
                                 </div>
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>out of 100</div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '4px' }}>/ 100</div>
                                 {originalScore && enhancedScore && enhancedScore.overallScore > originalScore.overallScore && (
                                     <div className="score-improvement positive" style={{ marginTop: '12px' }}>
-                                        ↑ Improved by {enhancedScore.overallScore - originalScore.overallScore} points
+                                        <ArrowRight size={14} style={{ transform: 'rotate(-45deg)', display: 'inline' }} /> Improved by {enhancedScore.overallScore - originalScore.overallScore} points
                                     </div>
                                 )}
                             </div>
@@ -1067,15 +1107,15 @@ export default function BuilderPage() {
 
                         <div className="download-grid" style={{ marginBottom: '32px' }}>
                             <div className="card download-card" onClick={() => handleDownload('html')}>
-                                <div className="file-icon">📄</div>
-                                <h3>PDF Resume</h3>
-                                <p>Print-ready format. Opens in a new tab for printing/saving as PDF.</p>
+                                <div className="file-icon"><FileType size={32} /></div>
+                                <h3>PDF Format</h3>
+                                <p>Print-ready, fixed formatting.</p>
                                 <button className="btn btn-primary">Download PDF</button>
                             </div>
                             <div className="card download-card" onClick={() => handleDownload('docx')}>
-                                <div className="file-icon">📝</div>
-                                <h3>Word Document</h3>
-                                <p>Editable format. Open and customize further in Microsoft Word.</p>
+                                <div className="file-icon"><FileText size={32} /></div>
+                                <h3>Word Format</h3>
+                                <p>Editable DOCX file.</p>
                                 <button className="btn btn-secondary">Download DOCX</button>
                             </div>
                         </div>
@@ -1084,7 +1124,7 @@ export default function BuilderPage() {
                         {previewHtml && (
                             <div>
                                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', marginBottom: '16px' }}>
-                                    📋 Resume Preview
+                                    Document Preview
                                 </h3>
                                 <div className="preview-frame">
                                     <iframe srcDoc={previewHtml} title="Resume Preview" />
@@ -1099,16 +1139,16 @@ export default function BuilderPage() {
             <button
                 className="chat-toggle"
                 onClick={() => setChatOpen(!chatOpen)}
-                title="AI Resume Coach"
+                title="Resume Assistant"
             >
-                {chatOpen ? '✕' : '💬'}
+                {chatOpen ? <X size={24} /> : <MessageSquare size={24} />}
             </button>
 
             {chatOpen && (
                 <div className="chat-panel">
                     <div className="chat-header">
-                        <h3>🤖 AI Resume Coach</h3>
-                        <button className="btn btn-ghost btn-sm" onClick={() => setChatOpen(false)}>✕</button>
+                        <h3>Resume Assistant</h3>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setChatOpen(false)}><X size={16} /></button>
                     </div>
                     <div className="chat-messages">
                         {chatMessages.map(msg => (
@@ -1125,12 +1165,12 @@ export default function BuilderPage() {
                     </div>
                     <div className="chat-input-area">
                         <input
-                            placeholder="Ask about your resume..."
+                            placeholder="Type your question..."
                             value={chatInput}
                             onChange={(e) => setChatInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && sendChatMessage()}
                         />
-                        <button onClick={sendChatMessage} disabled={chatLoading}>→</button>
+                        <button onClick={sendChatMessage} disabled={chatLoading}><ArrowRight size={16} /></button>
                     </div>
                 </div>
             )}
