@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { renderTemplate } from '@/lib/templates';
 import { ResumeData, TemplateId } from '@/lib/types';
+import { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } from 'docx';
 
 export async function POST(request: NextRequest) {
     try {
@@ -30,10 +31,7 @@ export async function POST(request: NextRequest) {
 
         if (format === 'docx') {
             // Generate DOCX using the docx library
-            const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = await import('docx');
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const sections: any[] = [];
+            const sections: Paragraph[] = [];
 
             // Header - Name
             sections.push(
@@ -234,8 +232,8 @@ export async function POST(request: NextRequest) {
     }
 }
 
+// Helper uses top-level imports directly
 function createSectionHeading(text: string) {
-    const { Paragraph, TextRun, BorderStyle } = require('docx');
     return new Paragraph({
         spacing: { before: 240, after: 80 },
         border: {
